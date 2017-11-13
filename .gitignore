@@ -1,0 +1,7 @@
+.idea/
+__pycache__
+.pyc
+.env
+plugin.ini
+config.ini
+ble_scanner.sh

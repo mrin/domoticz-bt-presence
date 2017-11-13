@@ -1,0 +1,13 @@
+[Settings]
+scanner_name=Living room
+bt_interface=hci0
+server_ip=192.168.0.10
+server_port=2221
+
+[00:00:00:00:00:00]
+battery_uuid=
+rssi_threshold=
+
+[00:00:00:00:00:01]
+battery_uuid=
+rssi_threshold=
