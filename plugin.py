@@ -77,7 +77,7 @@ class BasePlugin:
             if unit not in Devices: return
 
             if cmd == 'beacon':
-                UpdateDevice(unit, 1, '1')
+                UpdateDevice(unit, 1, '100')
                 rssi = tagData[3]
                 Domoticz.Debug('%s RSSI %s. Scanner: %s' % (macAddress, rssi, scannerName))
 
