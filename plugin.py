@@ -29,6 +29,8 @@ class BasePlugin:
 
     def __init__(self):
         self.udpConn = None
+        self.batteryServiceModeTime = None
+        self.batteryServiceModeTimeout = 60
         self.config = {}
         self.iconName = 'bt-beacon-presence-icon'
 
@@ -45,11 +47,11 @@ class BasePlugin:
 
         for tagMac, tagSettings in self.config.items():
             if tagSettings['unit'] not in Devices:
-                Domoticz.Device(Name="Tag %s" % tagMac, Unit=tagSettings['unit'], Type=17, Subtype=0, Switchtype=0,
+                Domoticz.Device(Name='Tag %s' % tagMac, Unit=tagSettings['unit'], TypeName='Switch',
                                 Image=iconID).Create()
 
         host, port = Parameters['Mode2'].split(':')
-        self.udpConn = Domoticz.Connection(Name="UDP", Transport="UDP/IP", Protocol="None", Address=host, Port=port)
+        self.udpConn = Domoticz.Connection(Name='UDP', Transport='UDP/IP', Protocol='None', Address=host, Port=port)
         self.udpConn.Listen()
 
         Domoticz.Heartbeat(2)
@@ -63,7 +65,7 @@ class BasePlugin:
         tagData = json.loads(Data.decode("utf-8"))
         try:
             cmd = tagData[0]
-            sender = tagData[1]
+            scannerName = tagData[1]
             macAddress = tagData[2]
             tag = self.config.get(macAddress, None)
 
@@ -76,11 +78,22 @@ class BasePlugin:
 
             if cmd == 'beacon':
                 UpdateDevice(unit, 1, '1')
-                Domoticz.Debug('Beacon %s. RSSI %s. Sender: %s' % (macAddress, tagData[3], sender))
+                rssi = tagData[3]
+                Domoticz.Debug('%s RSSI %s. Scanner: %s' % (macAddress, rssi, scannerName))
 
             elif cmd == 'battery':
-                UpdateDevice(unit, Devices[unit].nValue, Devices[unit].sValue, tagData[3])
-                Domoticz.Debug('Battery %s. Beacon %s. Sender: %s' % (tagData[3], macAddress, sender))
+                batteryLevel = tagData[3]
+
+                Domoticz.Debug('%s BATTERY %s. Scanner: %s' % (macAddress, batteryLevel, scannerName))
+
+                if batteryLevel:
+                    UpdateDevice(unit, Devices[unit].nValue, Devices[unit].sValue, batteryLevel)
+
+                if self.batteryServiceModeTime:
+                    self.exitBatteryServiceMode()
+
+            elif cmd == 'battery_service_mode':
+                self.enterBatteryServiceMode()
 
             else:
                 Domoticz.Error('Unexpected command: %s' % tagData[0])
@@ -100,14 +113,29 @@ class BasePlugin:
 
 
     def onHeartbeat(self):
+        if self.batteryServiceModeTime:
+            if (time.time() - self.batteryServiceModeTime) >= self.batteryServiceModeTimeout:
+                self.exitBatteryServiceMode(byTimeout=True)
+            return
+
         now = time.time()
         for tag in self.config.values():
             if (now - tag['last_update']) >= tag['timeout']:
                 UpdateDevice(tag['unit'], 0, '0')
 
-
     def onCommand(self, Unit, Command, Level, Hue):
         pass
+
+    def enterBatteryServiceMode(self):
+        self.batteryServiceModeTime = time.time()
+        Domoticz.Debug('ENTER Battery Service Mode %s. Scanner: %s' % (macAddress, scannerName))
+
+    def exitBatteryServiceMode(self, byTimeout=False):
+        t = time.time()
+        for tag in self.config.values():
+            tag['last_update'] = t
+        self.batteryServiceModeTime = None
+        Domoticz.Debug('EXIT Battery Service Mode. By Timeout %s.' % byTimeout)
 
 
 def loadConfig(configStr):
@@ -156,12 +184,14 @@ def nextUnitId(config):
     return max(unitIds)+1 if unitIds else 1
 
 
-def UpdateDevice(Unit, nValue, sValue, BatteryLevel=255, AlwaysUpdate=False):
+def UpdateDevice(Unit, nValue, sValue, BatteryLevel=None, AlwaysUpdate=False):
     if Unit not in Devices: return
     if Devices[Unit].nValue != nValue\
         or Devices[Unit].sValue != sValue\
-        or Devices[Unit].BatteryLevel != BatteryLevel\
+        or (BatteryLevel and Devices[Unit].BatteryLevel != BatteryLevel)\
         or AlwaysUpdate == True:
+
+        BatteryLevel = Devices[Unit].BatteryLevel if BatteryLevel is None else BatteryLevel
 
         Devices[Unit].Update(nValue, str(sValue), BatteryLevel=BatteryLevel)
 

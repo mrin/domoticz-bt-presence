@@ -3,11 +3,21 @@ scanner_name=Living room
 bt_interface=hci0
 server_ip=192.168.0.10
 server_port=2221
+battery_check_rssi_threshold=-77
+battery_check_time=03:00
+battery_check_attempts=2
 
 [00:00:00:00:00:00]
-battery_uuid=
+label=wife key tag
+battery_service_type=nut3
 rssi_threshold=
 
 [00:00:00:00:00:01]
-battery_uuid=
+label=mi band 2
+battery_service_type=miband2
 rssi_threshold=
+
+[00:00:00:00:00:03]
+label=tag 3
+battery_service_type=
+rssi_threshold=-60

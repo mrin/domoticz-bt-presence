@@ -1,5 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
+# Author: mrin
 # Provides:          ble_scanner
 # Required-Start:
 # Required-Stop:
@@ -10,7 +11,6 @@
 ### END INIT INFO
 
 # This next line determines what user the script runs as.
-# Root generally not recommended but necessary if you are using the Raspberry Pi GPIO from Python.
 DAEMON_USER=root
 
 NAME="BLE Scanner"
