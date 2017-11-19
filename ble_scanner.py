@@ -190,7 +190,7 @@ while bt_is_running_attempts:
                          'Check with hciconfig!', HCI_INTERFACE)
 
     bt_is_running_attempts -= 1
-    time.sleep(2)
+    time.sleep(5)
     if not bt_is_running_attempts:
         sys.exit(1)
 
