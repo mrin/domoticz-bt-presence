@@ -128,7 +128,7 @@ class BasePlugin:
 
     def enterBatteryServiceMode(self):
         self.batteryServiceModeTime = time.time()
-        Domoticz.Debug('ENTER Battery Service Mode %s. Scanner: %s' % (macAddress, scannerName))
+        Domoticz.Debug('ENTER Battery Service Mode.')
 
     def exitBatteryServiceMode(self, byTimeout=False):
         t = time.time()
