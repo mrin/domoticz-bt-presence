@@ -9,7 +9,7 @@ import Domoticz
 #       Author: mrin, 2017
 #
 """
-<plugin key="bt-beacon-presence" name="Bluetooth Beacon Presence" author="mrin" version="0.0.1" wikilink="" externallink="">
+<plugin key="bt-beacon-presence" name="Bluetooth Beacon Presence" author="mrin" version="0.0.1" wikilink="https://github.com/mrin/domoticz-bt-presence" externallink="">
     <params>
         <param field="Mode1" label="Config" width="500px" required="true" default="00:00:00:00:00:00|20, 00:00:00:00:00:01|20"/>
         <param field="Mode2" label="UDP Listen" width="200px" required="true" default="192.168.0.10:2221"/>
@@ -70,7 +70,7 @@ class BasePlugin:
             tag = self.config.get(macAddress, None)
 
             if not tag:
-                Domoticz.Debug('Beacon %s is not configured' % macAddress)
+                Domoticz.Error('Beacon %s is not configured. [Hardware->Device->Config]' % macAddress)
                 return
 
             unit = tag['unit']
@@ -195,7 +195,7 @@ def UpdateDevice(Unit, nValue, sValue, BatteryLevel=None, AlwaysUpdate=False):
 
         Devices[Unit].Update(nValue, str(sValue), BatteryLevel=BatteryLevel)
 
-        Domoticz.Debug("Update %s: nValue %s - sValue %s - BatteryLevel %s" % (
+        Domoticz.Log("Update %s: nValue %s - sValue %s - BatteryLevel %s" % (
             Devices[Unit].Name,
             nValue,
             sValue,
