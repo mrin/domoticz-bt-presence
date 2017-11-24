@@ -1,21 +1,35 @@
 [Settings]
+; Use different scanner_name if you have several instances for better debugging
 scanner_name=Living room
+; By default hci0 in RPI3, but you can check with "hciconfig" command
 bt_interface=hci0
+; Domoticz IP and UDP port where plugin runs
 server_ip=192.168.0.10
 server_port=2221
-battery_check_rssi_threshold=-77
+; Check battery if signal strength >= setting
+; Connection will not be established if signal is very low
+battery_check_rssi_threshold=-75
+; Time to check battery. 24h. Interval check_time + 30min
 battery_check_time=03:00
+; Attempts to check in time interval when beacon available
 battery_check_attempts=2
 
+; Beacon MAC address
 [00:00:00:00:00:00]
-label=wife key tag
+; For better debug
+label=key tag
+; Supports battery check for nut3 and miband2
+; Can be empty (battery check disabled)
 battery_service_type=nut3
+; Signal strength threshold,
+; When signal lower the setting -> beacon info will not send to the plugin
+; Can be empty (threshold disabled)
 rssi_threshold=
 
 [00:00:00:00:00:01]
 label=mi band 2
 battery_service_type=miband2
-rssi_threshold=
+rssi_threshold=-120
 
 [00:00:00:00:00:03]
 label=tag 3
