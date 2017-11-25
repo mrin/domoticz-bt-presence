@@ -194,8 +194,7 @@ sudo update-rc.d -f ble_scanner remove
 
 ## Beacons
 
-- Nut find 3, Nut find 2, Nut mini
-http://nutspaworce.com (can be found on ALI etc...)
+- Nut find 3, Nut find 2, Nut mini (can be found on ALI etc...)
 - Mi Band 1, 1S, 2 (in discoverable mode)
 - other LE beacons
 
