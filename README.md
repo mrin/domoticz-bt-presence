@@ -186,3 +186,27 @@ sudo service ble_scanner stop
 # if you want to delete from startup:
 sudo update-rc.d -f ble_scanner remove
 ```
+
+## Screenshots
+
+![ble_tag](https://user-images.githubusercontent.com/93999/33228134-fa826958-d1c4-11e7-846b-690ceee87825.png)
+
+
+## Beacons
+
+- Nut find 3, Nut find 2, Nut mini
+http://nutspaworce.com (can be found on ALI etc...)
+- Mi Band 1, 1S, 2 (in discoverable mode)
+- other LE beacons
+
+Battery checker supports "Nut find 3" and Mi Band 2 now. 
+To add your beacon, use Android app "BLE Scanner:
+1. Open app and Scan BLE devices
+2. Find your device in the list and click Connect
+3. Find attribute "Battery Service", click on it then save UUID.
+4. Create Issue on github and send UUID, beacon device link/photo, read value.
+Also battery level can be encoded in other attribute, for example Mi Band 2 does not have "Battery service", 
+but have bettery level encoded in depth by UUID ```00000006-0000-3512-2118-0009af100700```
+
+
+![battery_1](https://user-images.githubusercontent.com/93999/33228575-aae2e070-d1cf-11e7-9adc-989b8e3494d3.png)
