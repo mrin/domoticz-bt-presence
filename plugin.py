@@ -9,7 +9,7 @@ import Domoticz
 #       Author: mrin, 2017
 #
 """
-<plugin key="bt-beacon-presence" name="Bluetooth Beacon Presence" author="mrin" version="0.0.1" wikilink="https://github.com/mrin/domoticz-bt-presence" externallink="">
+<plugin key="bt-beacon-presence" name="Bluetooth Beacon Presence" author="mrin" version="0.0.2" wikilink="https://github.com/mrin/domoticz-bt-presence" externallink="">
     <params>
         <param field="Mode1" label="Config" width="500px" required="true" default="00:00:00:00:00:00|20, 00:00:00:00:00:01|20"/>
         <param field="Mode2" label="UDP Listen" width="200px" required="true" default="192.168.0.10:2221"/>
@@ -210,7 +210,7 @@ def onStart():
     global _plugin
     _plugin.onStart()
 
-def onMessage(Connection, Data):
+def onMessage(Connection, Data, Status=None, Extra=None):
     global _plugin
     _plugin.onMessage(Connection, Data)
 
