@@ -1,9 +1,3 @@
-import os
-import configparser
-import json
-import time
-import Domoticz
-
 #
 #       Bluetooth Beacon Presence Plugin
 #       Author: mrin, 2017
@@ -22,6 +16,11 @@ import Domoticz
     </params>
 </plugin>
 """
+import os
+import configparser
+import json
+import time
+import Domoticz
 
 
 class BasePlugin:
@@ -62,7 +61,12 @@ class BasePlugin:
 
 
     def onMessage(self, Connection, Data):
-        tagData = json.loads(Data.decode("utf-8"))
+        try:
+            tagData = json.loads(Data.decode("utf-8"))
+        except ValueError as e:
+            Domoticz.Error('JSON decode error %s' % str(e))
+            return
+
         try:
             cmd = tagData[0]
             scannerName = tagData[1]
