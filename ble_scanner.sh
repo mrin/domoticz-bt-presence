@@ -14,11 +14,14 @@
 DAEMON_USER=root
 
 NAME="BLE Scanner"
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
-DAEMON=/home/pi/domoticz/plugins/bt-presence/ble_scanner.py
 SCRIPTNAME=/etc/init.d/ble_scanner
 PIDFILE=/var/run/ble_scanner.pid
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
 
+DAEMON=/home/pi/domoticz/plugins/bt-presence/ble_scanner.py
+# uncomment these lines if you want log in file
+#DAEMON_ARGS="$DAEMON_ARGS --log /home/pi/domoticz/plugins/bt-presence/ble_scanner.log"
+#DAEMON_ARGS="$DAEMON_ARGS --loglevel debug" # debug, info, error
 
 # Exit if the package is not installed
 [ -x "$DAEMON" ] || exit 0
@@ -49,7 +52,7 @@ case "$1" in
            [ "$VERBOSE" != no ] && [ $RET_STATUS = 1 ] && log_warning_msg "Daemon was already running"
 	;;
 	*)
-     	   start-stop-daemon --start  --background --oknodo --pidfile $PIDFILE --make-pidfile --chuid $DAEMON_USER --exec $DAEMON
+     	   start-stop-daemon --start  --background --oknodo --pidfile $PIDFILE --make-pidfile --chuid $DAEMON_USER --exec $DAEMON -- $DAEMON_ARGS
            log_end_msg $?
         ;;
      esac

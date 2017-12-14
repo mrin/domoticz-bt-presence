@@ -1,12 +1,5 @@
 #!/usr/bin/python
 
-#### LOGGING
-import logging
-logLevel=logging.DEBUG
-FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-logging.basicConfig(format=FORMAT, level=logLevel)
-#### ./LOGGING
-
 import os
 import subprocess
 import sys
@@ -19,6 +12,35 @@ import json
 import ConfigParser
 import re
 from datetime import datetime, timedelta
+
+#### LOGGING
+import logging
+from logging.handlers import RotatingFileHandler
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--log', type=str, default=None)
+parser.add_argument('--loglevel', type=str, const='all', nargs='?', choices=['debug', 'info', 'error'], default='debug')
+args = parser.parse_args()
+
+logLevelMap = {
+    'debug': logging.DEBUG,
+    'info': logging.INFO,
+    'error': logging.ERROR
+}
+logLevel = logLevelMap.get(args.loglevel)
+
+logger = logging.getLogger('ble_scanner')
+logger.setLevel(logLevel)
+if args.log:
+    h = RotatingFileHandler(os.path.join(os.path.dirname(__file__), '.', args.log), maxBytes=1024 * 1024, backupCount=5)
+else:
+    h = logging.StreamHandler(sys.stdout)
+
+h.setLevel(logLevel)
+h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
+logger.addHandler(h)
+#### ./LOGGING
 
 LE_META_EVENT = 0x3e
 OGF_LE_CTL = 0x08
@@ -58,7 +80,7 @@ def loadConfig():
     if os.path.exists(path):
         config.read(path)
     else:
-        logging.error('File %s cannot be opened', path)
+        logger.error('File %s cannot be opened', path)
         sys.exit(1)
 
     SCANNER_NAME = config.get('Settings', 'scanner_name').strip()
@@ -105,7 +127,7 @@ def popen_execute(cmd):
     return (output, err)
 
 def battery_service_checker(mac, tag):
-    logging.debug('start battery check %s', mac)
+    logger.info('start battery check %s', mac)
     level = None
     battery_service_type = tag['battery_service_type']
     battery_uuid = BATTERY_UUID.get(battery_service_type)
@@ -118,14 +140,14 @@ def battery_service_checker(mac, tag):
             bt_conn_output, err = popen_execute(["hcitool -i %s lecc --random %s" % (HCI_INTERFACE, mac)])
             bt_conn_handle_regex = re.search('(\d+)', bt_conn_output)
             if err or not bt_conn_handle_regex:
-                logging.error('battery service: LE connect error [%s] [%s]', mac, err)
+                logger.error('battery service: LE connect error [%s] [%s]', mac, err)
                 return level
 
             bt_conn_handle_id = bt_conn_handle_regex.group(1)
 
             bt_disconnect_output, err = popen_execute(["hcitool -i %s ledc %s" % (HCI_INTERFACE, bt_conn_handle_id)])
             if err:
-                logging.error('battery service: LE disconnect error [%s] [%s]', mac, err)
+                logger.error('battery service: LE disconnect error [%s] [%s]', mac, err)
                 return level
 
         gatt_output, err = popen_execute(["gatttool -i %s -t random -b %s --char-read --uuid %s" % (
@@ -134,7 +156,7 @@ def battery_service_checker(mac, tag):
             battery_uuid
         )])
         if err or "value:" not in gatt_output:
-            logging.error('battery service: LE gatttool error [%s] [%s][%s]', mac, gatt_output, err)
+            logger.error('battery service: LE gatttool error [%s] [%s][%s]', mac, gatt_output, err)
             return level
 
         gatt_output = gatt_output.replace(" ", "").replace("\n", "")
@@ -149,19 +171,19 @@ def battery_service_checker(mac, tag):
             level = struct.unpack('H', bin_value)[0]
 
         else:
-            logging.error('battery service: unknown device type [%s] [%s] [%s]', mac, battery_uuid, gatt_output)
+            logger.error('battery service: unknown device type [%s] [%s] [%s]', mac, battery_uuid, gatt_output)
 
         if level is not None:
-            logging.debug('battery service: [%s] level %s%%', mac, level)
+            logger.info('battery service: [%s] level %s%%', mac, level)
 
         return level
 
     except Exception as e:
-        logging.error('battery service: Exception %s', e)
+        logger.error('battery service: Exception %s', e)
         return level
 
     finally:
-        logging.debug('end battery check %s', mac)
+        logger.info('end battery check %s', mac)
 
 def is_time_between_check_battery_time(time_str):
     if not BATTERY_CHECK_TIME: return False
@@ -183,10 +205,10 @@ while bt_is_running_attempts:
     (output, err) = interface.communicate()
 
     if 'RUNNING' in output:  # Check return of hciconfig to make sure it's up
-        logging.debug('Ok %s interface Up n running !' % HCI_INTERFACE)
+        logger.info('Ok %s interface Up n running !' % HCI_INTERFACE)
         break
     else:
-        logging.critical('Error : hci0 interface not Running. Do you have a BLE device connected to %s? '
+        logger.critical('Error : hci0 interface not Running. Do you have a BLE device connected to %s? '
                          'Check with hciconfig!', HCI_INTERFACE)
 
     bt_is_running_attempts -= 1
@@ -204,19 +226,19 @@ while True:
     # connect to bt hci
     if bt_sock is None or need_reconnect:
         if bt_sock:
-            logging.debug('close old bt socket')
+            logger.debug('close old bt socket')
             bt_sock.close()
             bt_sock = None
 
         restart_hci()
 
         try:
-            logging.debug('new bt socket')
+            logger.debug('new bt socket')
             bt_sock = bluez.hci_open_dev(int(HCI_INTERFACE[-1:]))
-            logging.debug('Connected to bluetooth device %s', HCI_INTERFACE)
+            logger.debug('Connected to bluetooth device %s', HCI_INTERFACE)
             time.sleep(1)
         except:
-            logging.critical('Unable connect to bluetooth device...')
+            logger.critical('Unable connect to bluetooth device...')
             sys.exit(1)
 
         old_filter = bt_sock.getsockopt(bluez.SOL_HCI, bluez.HCI_FILTER, 14)
@@ -263,7 +285,7 @@ while True:
                 # tag availability
                 if rssiTreshold == '' or rssi >= int(rssiTreshold):
                     udp.sendto(json.dumps(['beacon', SCANNER_NAME, macAddress, rssi]), (SERVER_IP, SERVER_PORT))
-                    logging.debug('%s RSSI %s - %s', macAddress.lower(), rssi, tag['label'])
+                    logger.info('%s RSSI %s - %s', macAddress.lower(), rssi, tag['label'])
 
                 #  battery check
                 cur_time = datetime.now()

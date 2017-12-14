@@ -4,3 +4,4 @@ __pycache__
 .env
 plugin.ini
 config.ini
+ble_scanner.log

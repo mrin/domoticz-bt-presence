@@ -18,7 +18,7 @@ It is tested to work with BlueZ 5.47, but it should work with 5.43+ too.
 
 Check BlueZ version: ```bluetoothd --version```
 
-### Installing BlueZ from sources:
+### Installing BlueZ
 
 ```
 sudo systemctl stop bluetooth
@@ -43,7 +43,7 @@ bluetoothd --version
 # should now print 5.47
 ```
 
-### Checking bluetooth:
+### Check bluetooth
 
 Run the hciconfig tool:
 ```
@@ -66,13 +66,7 @@ Find the MAC Address of your beacon with hcitool:
 sudo hcitool lescan
 ```
 
-### Domoticz plugin system requirements:
-
-Latest Beta's only now. Make sure you have installed ```python3```, ```python3-dev``` for run python plugin system.
-
-```sudo apt-get install python3 python3-dev```
-
-## Installation
+## Plugin Installation
 
 ```
 sudo apt-get install python-bluez
@@ -100,7 +94,7 @@ If you have mac addresses of your beacons let's configure plugin and then BLE Sc
  
  After clicking on the Add button the new devices are available in **Setup** -> **Devices**.
  
- **Time to configure BLE Scanner**
+ **Configure BLE Scanner**
  
 ```
 # copy config template
@@ -156,16 +150,19 @@ pi@smarthome:~/domoticz/plugins/bt-presence $ sudo ./ble_scanner.py
 *Keep in mind, you can run several scanners for greater coverage*
 
 
-### Run BLE scanner as service
+### Run as service
 
 Check absolute path to ble scanner:
 ```
 nano ble_scanner.sh
 
 DAEMON=/home/pi/domoticz/plugins/bt-presence/ble_scanner.py
+# uncomment these lines if you want log in file
+#DAEMON_ARGS="$DAEMON_ARGS --log /home/pi/domoticz/plugins/bt-presence/ble_scanner.log"
+#DAEMON_ARGS="$DAEMON_ARGS --loglevel debug" # debug, info, error
 ```
 
-Symlink ble_scanner.sh and add to system services:
+Add to system services:
 
 ```
 # check your path here:
